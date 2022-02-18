@@ -1,10 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Arrays;
+import java.util.*;
 
 public class MovieCollection
 {
@@ -164,12 +161,29 @@ public class MovieCollection
         System.out.println("Box office revenue: " + movie.getRevenue());
     }
 
+    public static void selectionSortWordList(List<String> words)
+    {
+        for(int n = 0; n < words.size() - 1; n++)
+        {
+            int minInd = n;
+            for(int m = n + 1; m < words.size(); m++)
+            {
+                if(words.get(m).compareTo(words.get(minInd)) < 0)
+                {
+                    minInd = m;
+                }
+            }
+            String temp = words.get(n);
+            words.set(n,words.get(minInd));
+            words.set(minInd,temp);
+        }
+    }
+
     private void searchCast()
     {
         System.out.print("Enter a person to search for: ");
         String searchTerm = scanner.nextLine();
         String all = "";
-        String cast = "";
         // prevent case sensitivity
         searchTerm = searchTerm.toLowerCase();
 
@@ -178,18 +192,89 @@ public class MovieCollection
         {
             all += movies.get(n).getCast();
         }
-        while(all.indexOf(searchTerm) != -1)
+
+        all = all.toLowerCase();
+
+        String[] a = all.split("\\|");
+        ArrayList<String> results = new ArrayList<String>(Arrays.asList(a));
+        String appearances = "";
+        for(int l = 0; l < results.size(); l++)
         {
-            int ind = all.indexOf(searchTerm);
-            String f = all.substring(ind,all.substring(ind).indexOf("|") + 1);
-            if(cast.indexOf(f) == -1)
+            if(results.get(l).indexOf(searchTerm) != -1)
             {
-                cast += f;
+                if(appearances.indexOf(results.get(l)) == -1)
+                {
+                    appearances += "," + results.get(l);
+                }
+                else
+                {
+                    results.remove(l);
+                    l--;
+                }
             }
-            all = all.substring(all.substring(ind).indexOf("|") + 1);
+            else
+            {
+                results.remove(l);
+                l--;
+            }
         }
-        String[] a = cast.split("\\|");
-        List<String> results = Arrays.asList(a);
+
+        selectionSortWordList(results);
+
+        for (int i = 0; i < results.size(); i++)
+        {
+            String actor = results.get(i);
+
+            // this will print index 0 as choice 1 in the results list; better for user!
+            int choiceNum = i + 1;
+
+            System.out.println("" + choiceNum + ". " + actor);
+        }
+
+        System.out.println("Which actor would you like to learn more about?");
+        System.out.print("Enter number: ");
+
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        String actor = results.get(choice - 1);
+
+        ArrayList<Movie> m = new ArrayList<Movie>();
+
+        for(int k = 0; k < movies.size(); k++)
+        {
+            if(movies.get(k).getCast().indexOf(actor) != -1)
+            {
+                m.add(movies.get(k));
+            }
+        }
+
+        // sort the results by title
+        sortResults(m);
+
+        // now, display them all to the user
+        for (int i = 0; i < m.size(); i++)
+        {
+            String title = m.get(i).getTitle();
+
+            // this will print index 0 as choice 1 in the results list; better for user!
+            int choiceNum = i + 1;
+
+            System.out.println("" + choiceNum + ". " + title);
+        }
+
+        System.out.println("Which movie would you like to learn more about?");
+        System.out.print("Enter number: ");
+
+        int choice2 = scanner.nextInt();
+        scanner.nextLine();
+
+        Movie selectedMovie = m.get(choice2 - 1);
+
+        displayMovieInfo(selectedMovie);
+
+        System.out.println("\n ** Press Enter to Return to Main Menu **");
+        scanner.nextLine();
     }
 
     private void searchKeywords()
